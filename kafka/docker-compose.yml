@@ -108,3 +108,9 @@ services:
     depends_on:
       - broker-1
       - broker-2
+
+volumes:
+  controller-data:
+  controller-2-data:
+  broker-data:
+  broker-2-data:
