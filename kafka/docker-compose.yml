@@ -76,7 +76,7 @@ services:
     ports:
       - 9000:9000
     environment:
-      KAFKA_BROKERCONNECT: broker-1:9092
+      KAFKA_BROKERCONNECT: broker-1:19092,broker-2:19092
       SERVER_SERVLET_CONTEXTPATH: /
     depends_on:
       - broker-1
