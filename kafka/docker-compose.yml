@@ -10,9 +10,18 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-
     volumes:
       - controller-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9093", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   controller-2:
     image: apache/kafka:latest
@@ -27,6 +36,16 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - controller-2-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9093", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   broker-1:
     image: apache/kafka:latest
@@ -48,6 +67,16 @@ services:
     depends_on:
       - controller-1
       - controller-2
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1G
 
   broker-2:
     image: apache/kafka:latest
@@ -69,6 +98,16 @@ services:
     depends_on:
       - controller-1
       - controller-2
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1G
 
   kafdrop:
     image: obsidiandynamics/kafdrop:latest
@@ -81,9 +120,19 @@ services:
     depends_on:
       - broker-1
       - broker-2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
 volumes:
-  controller-data:
+  controller-data: 
   controller-2-data:
   broker-data:
   broker-2-data:
