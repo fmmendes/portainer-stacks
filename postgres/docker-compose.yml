@@ -1,6 +1,8 @@
 services:
   postgres:
     image: postgres:16
+    restart: unless-stopped
+    container_name: postgres_local
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -9,6 +11,33 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - postgres-backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /srv/postgres-data
+      o: bind
+  postgres-backups:
+      driver: local
+      driver_opts:
+        type: none
+        device: /srv/postgres-backups
+        o: bind
