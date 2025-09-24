@@ -46,22 +46,6 @@ services:
           memory: 512M
     restart: unless-stopped
 
-  kafdrop:
-    image: obsidiandynamics/kafdrop:latest
-    container_name: kafdrop
-    ports:
-      - 9000:9000
-    environment:
-      KAFKA_BROKERCONNECT: broker:19092
-      SERVER_SERVLET_CONTEXTPATH: /
-    depends_on:
-      - broker
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 256M
-    restart: unless-stopped
 
 volumes:
   controller-data:
