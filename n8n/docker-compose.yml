@@ -1,7 +1,7 @@
 services:
   traefik:
     image: "traefik"
-    restart: always
+    restart: unless-stopped
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -9,13 +9,12 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--entrypoints.websecure.address=:5678"
+      - "--certificatesresolvers.mytlschallenge.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.mytlschallenge.acme.email=${SSL_EMAIL}"
       - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - traefik_data:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -60,7 +59,7 @@ services:
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
     volumes:
       - n8n_data:/home/node/.n8n
-      - ./local-files:/files
+      - n8n_files:/files
     tty: true
     stdin_open: true
     restart: unless-stopped
@@ -72,6 +71,13 @@ volumes:
     driver_opts:
       type: none
       device: /srv/n8n_data
+      o: bind
+  n8n_files:
+    name: n8n_files
+    driver: local
+    driver_opts:
+      type: none
+      device: /srv/n8n_files
       o: bind
   traefik_data:
     name: traefik_data
