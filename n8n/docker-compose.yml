@@ -50,12 +50,12 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /srv/n8n_data
+      device: /srv/n8n/data
       o: bind
   n8n_files:
     name: n8n_files
     driver: local
     driver_opts:
       type: none
-      device: /srv/n8n_files
+      device: /srv/n8n/files
       o: bind
