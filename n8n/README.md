@@ -70,3 +70,24 @@ E recarregar nginx manualmente (quando necessário):
 ```bash
 docker compose exec n8n-nginx nginx -s reload
 ```
+
+### Substituir o template manualmente (fluxo para Portainer)
+
+Como você prefere substituir o template manualmente antes de subir a stack no Portainer, faça o seguinte no host onde o arquivo `default.conf.tmpl` fica (ex.: `/srv/n8n/nginx/templates/default.conf.tmpl`):
+
+- Usando `envsubst` (se disponível no host):
+
+```bash
+export SUBDOMAIN=n8n
+export DOMAIN_NAME=example.com
+envsubst '\$SUBDOMAIN \$DOMAIN_NAME' < /srv/n8n/nginx/templates/default.conf.tmpl > /srv/n8n/nginx/templates/default.conf
+```
+
+- Ou usando `sed` (substitui as ocorrências simples `${SUBDOMAIN}` e `${DOMAIN_NAME}`):
+
+```bash
+sed -e 's/\${SUBDOMAIN}/n8n/g' -e 's/\${DOMAIN_NAME}/example.com/g' /srv/n8n/nginx/templates/default.conf.tmpl > /srv/n8n/nginx/templates/default.conf
+```
+
+Depois copie/ponha o `default.conf` no local que o Portainer usa para montar (`/srv/n8n/nginx/templates/default.conf` no host) ou faça o upload via UI do Portainer. O container `n8n-nginx` usará o arquivo `default.conf` estático em `/etc/nginx/conf.d/default.conf` (o compose já monta o template no container, então ajuste conforme seu fluxo de deploy).
+
