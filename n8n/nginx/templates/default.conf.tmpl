@@ -1,0 +1,22 @@
+server {
+    listen 5678 ssl;
+    server_name ${SUBDOMAIN}.${DOMAIN_NAME};
+
+    # Read certificate files mounted from the host under /certs (read-only).
+    ssl_certificate /certs/${SUBDOMAIN}.${DOMAIN_NAME}.crt;
+    ssl_certificate_key /certs/${SUBDOMAIN}.${DOMAIN_NAME}.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+        proxy_pass http://n8n:5678;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+    }
+
+}
