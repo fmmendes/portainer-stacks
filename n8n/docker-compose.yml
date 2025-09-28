@@ -27,8 +27,8 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
       - n8n_files:/files
-      - /etc/letsencrypt/live/${SUBDOMAIN}.${DOMAIN_NAME}/fullchain.pem:/certs/fullchain.pem:ro
-      - /etc/letsencrypt/live/${SUBDOMAIN}.${DOMAIN_NAME}/privkey.pem:/certs/privkey.pem:ro
+      - /srv/n8n/certs/fullchain.pem:/certs/fullchain.pem:ro
+      - /srv/n8n/certs/privkey.pem:/certs/privkey.pem:ro
     tty: true
     stdin_open: true
     restart: unless-stopped
