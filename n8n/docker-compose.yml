@@ -13,7 +13,7 @@ services:
       NODE_ENV: "production"
       N8N_SSL_CERT: "/certs/fullchain.pem"
       N8N_SSL_KEY: "/certs/privkey.pem"
-      WEBHOOK_URL: "https://${SUBDOMAIN}.${DOMAIN_NAME}:5678/"
+      WEBHOOK_URL: "https://${SUBDOMAIN}.${DOMAIN_NAME}:8443/"
       DB_TYPE: "postgresdb"
       DB_POSTGRESDB_DATABASE: "${DB_POSTGRESDB_DATABASE}"
       DB_POSTGRESDB_HOST: "${DB_POSTGRESDB_HOST}"
@@ -23,7 +23,7 @@ services:
       DB_POSTGRESDB_PASSWORD: "${DB_POSTGRESDB_PASSWORD}"
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
     ports:
-      - "5678:5678"
+      - "8443:5678"
     volumes:
       - n8n_data:/home/node/.n8n
       - n8n_files:/files
