@@ -8,12 +8,10 @@ services:
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
       N8N_HOST: "${SUBDOMAIN}.${DOMAIN_NAME}"
       N8N_PORT: "5678"
-      N8N_PROTOCOL: "https"
+      N8N_PROTOCOL: "http"
       N8N_RUNNERS_ENABLED: "true"
       NODE_ENV: "production"
-      N8N_SSL_CERT: "/certs/fullchain.pem"
-      N8N_SSL_KEY: "/certs/privkey.pem"
-      WEBHOOK_URL: "https://${SUBDOMAIN}.${DOMAIN_NAME}:8443/"
+      WEBHOOK_URL: "https://${SUBDOMAIN}.${DOMAIN_NAME}/"
       DB_TYPE: "postgresdb"
       DB_POSTGRESDB_DATABASE: "${DB_POSTGRESDB_DATABASE}"
       DB_POSTGRESDB_HOST: "${DB_POSTGRESDB_HOST}"
@@ -22,16 +20,22 @@ services:
       DB_POSTGRESDB_SCHEMA: "${DB_POSTGRESDB_SCHEMA}"
       DB_POSTGRESDB_PASSWORD: "${DB_POSTGRESDB_PASSWORD}"
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
-    ports:
-      - "8443:5678"
     volumes:
       - n8n_data:/home/node/.n8n
       - n8n_files:/files
-      - /srv/n8n/certs/fullchain.pem:/certs/fullchain.pem:ro
-      - /srv/n8n/certs/privkey.pem:/certs/privkey.pem:ro
     tty: true
     stdin_open: true
     restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel run
+    depends_on:
+      - n8n
 
 volumes:
   n8n_data:
