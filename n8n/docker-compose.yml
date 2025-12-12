@@ -41,11 +41,16 @@ services:
       - n8n
     networks:
       - n8n_net
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://n8n:5678/ >/dev/null 2>&1 || exit 1"]
-      interval: 20s
-      timeout: 5s
-      retries: 5
+
+  debug:
+    image: alpine:3.20
+    container_name: n8n-debug
+    command: ["/bin/sh", "-c", "sleep infinity"]
+    restart: unless-stopped
+    networks:
+      - n8n_net
+    # Install basic networking tools at start (optional)
+    # You can exec and install: apk add --no-cache curl busybox-extras bind-tools
 
 volumes:
   n8n_data:
