@@ -11,6 +11,7 @@ services:
       N8N_PROTOCOL: "http"
       N8N_RUNNERS_ENABLED: "true"
       NODE_ENV: "production"
+      N8N_GIT_NODE_DISABLE_BARE_REPOS: "true"
       WEBHOOK_URL: "https://${SUBDOMAIN}.${DOMAIN_NAME}/"
       DB_TYPE: "postgresdb"
       DB_POSTGRESDB_DATABASE: "${DB_POSTGRESDB_DATABASE}"
