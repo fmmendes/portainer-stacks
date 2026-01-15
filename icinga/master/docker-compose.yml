@@ -1,0 +1,30 @@
+services:
+  icinga2-master:
+    image: icinga/icinga2:2
+    container_name: icinga2-master
+    hostname: icinga2-master
+    restart: unless-stopped
+    environment:
+      TZ: "America/Sao_Paulo"
+    ports:
+      - "5665:5665"
+    volumes:
+      - icinga2_etc:/etc/icinga2
+      - icinga2_var:/var/lib/icinga2
+      - icinga2_log:/var/log/icinga2
+    networks:
+      - icinga-master-net
+      - icinga-shared
+
+volumes:
+  icinga2_etc:
+  icinga2_var:
+  icinga2_log:
+
+networks:
+  icinga-master-net:
+    name: icinga-master-net
+    driver: bridge
+  icinga-shared:
+    external: true
+    name: icinga-shared

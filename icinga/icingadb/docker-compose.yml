@@ -1,0 +1,50 @@
+services:
+  redis-icingadb:
+    image: redis:7-alpine
+    container_name: redis-icingadb
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+    volumes:
+      - icingadb_redis_data:/data
+    networks:
+      - icinga-icingadb-net
+      - icinga-shared
+
+  icingadb:
+    image: icinga/icingadb:1
+    container_name: icingadb
+    restart: unless-stopped
+    environment:
+      TZ: "${TZ:-America/Sao_Paulo}"
+      ICINGADB_REDIS_HOST: "${ICINGADB_REDIS_HOST:-redis-icingadb}"
+      ICINGADB_REDIS_PORT: "${ICINGADB_REDIS_PORT:-6379}"
+      ICINGADB_DATABASE_TYPE: "${ICINGADB_DATABASE_TYPE:-pgsql}"
+      ICINGADB_DATABASE_HOST: "${ICINGADB_DATABASE_HOST}"
+      ICINGADB_DATABASE_PORT: "${ICINGADB_DATABASE_PORT:-5432}"
+      ICINGADB_DATABASE_DATABASE: "${ICINGADB_DATABASE_DATABASE:-icingadb}"
+      ICINGADB_DATABASE_USER: "${ICINGADB_DATABASE_USER:-icingadb}"
+      ICINGADB_DATABASE_PASSWORD: "${ICINGADB_DATABASE_PASSWORD}"
+      ICINGADB_LOGGING_LEVEL: "${ICINGADB_LOGGING_LEVEL:-info}"
+      ICINGADB_LOGGING_OUTPUT: "${ICINGADB_LOGGING_OUTPUT:-console}"
+    volumes:
+      - icingadb_data:/var/lib/icingadb
+    depends_on:
+      - redis-icingadb
+    networks:
+      - icinga-icingadb-net
+      - icinga-shared
+
+volumes:
+  icingadb_redis_data:
+  icingadb_data:
+
+networks:
+  icinga-icingadb-net:
+    name: icinga-icingadb-net
+    driver: bridge
+  icinga-shared:
+    external: true
+    name: icinga-shared

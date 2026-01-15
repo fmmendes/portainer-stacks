@@ -1,0 +1,84 @@
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: icingaweb2-nginx
+    hostname: icingaweb2-nginx
+    restart: unless-stopped
+    ports:
+      - "8443:443"
+    environment:
+      TZ: "${TZ:-America/Sao_Paulo}"
+      ICINGA_WEB_SERVER_NAME: "${ICINGA_WEB_SERVER_NAME}"
+      ICINGA_WEB_CERT_DOMAIN: "${ICINGA_WEB_CERT_DOMAIN}"
+      ICINGA_WEB_CLIENT_MAX_BODY_SIZE: "${ICINGA_WEB_CLIENT_MAX_BODY_SIZE:-64m}"
+    volumes:
+      - ${ICINGA_WEB_LE_LIVE_DIR}:/certs/live/${ICINGA_WEB_CERT_DOMAIN}:ro
+      - ${ICINGA_WEB_LE_ARCHIVE_DIR}:/certs/archive/${ICINGA_WEB_CERT_DOMAIN}:ro
+      - icingaweb2_nginx_logs:/var/log/nginx
+    command:
+      - /bin/sh
+      - -c
+      - |
+        cat >/etc/nginx/conf.d/default.conf <<EOF
+        server {
+          listen 443 ssl;
+          server_name $ICINGA_WEB_SERVER_NAME;
+
+          ssl_certificate     /certs/live/$ICINGA_WEB_CERT_DOMAIN/fullchain.pem;
+          ssl_certificate_key /certs/live/$ICINGA_WEB_CERT_DOMAIN/privkey.pem;
+
+          client_max_body_size $ICINGA_WEB_CLIENT_MAX_BODY_SIZE;
+
+          location / {
+            proxy_set_header Host $$host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_pass http://icingaweb2:80;
+          }
+        }
+        EOF
+
+        nginx -g 'daemon off;'
+    depends_on:
+      - icingaweb2
+    networks:
+      - icinga-web-net
+
+  icingaweb2:
+    image: icinga/icingaweb2:2
+    container_name: icingaweb2
+    hostname: icingaweb2
+    restart: unless-stopped
+    environment:
+      TZ: "${TZ:-America/Sao_Paulo}"
+      ICINGAWEB2_BASE_URL: "${ICINGAWEB2_BASE_URL}"
+      ICINGAWEB2_DB_TYPE: "${ICINGAWEB2_DB_TYPE:-pgsql}"
+      ICINGAWEB2_DB_HOST: "${ICINGAWEB2_DB_HOST}"
+      ICINGAWEB2_DB_PORT: "${ICINGAWEB2_DB_PORT:-5432}"
+      ICINGAWEB2_DB_NAME: "${ICINGAWEB2_DB_NAME:-icingaweb2}"
+      ICINGAWEB2_DB_USER: "${ICINGAWEB2_DB_USER:-icingaweb2}"
+      ICINGAWEB2_DB_PASSWORD: "${ICINGAWEB2_DB_PASSWORD:-CHANGE_ME}"
+      ICINGA2_API_HOST: "${ICINGA2_API_HOST}"
+      ICINGA2_API_PORT: "${ICINGA2_API_PORT:-5665}"
+      ICINGA2_API_USER: "${ICINGA2_API_USER:-icingaweb2}"
+      ICINGA2_API_PASSWORD: "${ICINGA2_API_PASSWORD:-CHANGE_ME}"
+      PHP_MEMORY_LIMIT: "${PHP_MEMORY_LIMIT:-256M}"
+      PHP_MAX_EXECUTION_TIME: "${PHP_MAX_EXECUTION_TIME:-60}"
+      PHP_POST_MAX_SIZE: "${PHP_POST_MAX_SIZE:-64M}"
+      PHP_UPLOAD_MAX_FILESIZE: "${PHP_UPLOAD_MAX_FILESIZE:-64M}"
+    volumes:
+      - icingaweb2_etc:/etc/icingaweb2
+      - icingaweb2_var:/var/lib/icingaweb2
+    networks:
+      - icinga-web-net
+
+volumes:
+  icingaweb2_etc:
+  icingaweb2_var:
+  icingaweb2_nginx_logs:
+
+networks:
+  icinga-web-net:
+    name: icinga-web-net
+    driver: bridge
