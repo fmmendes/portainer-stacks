@@ -44,6 +44,7 @@ services:
       - icingaweb2
     networks:
       - icinga-web-net
+      - icinga-shared
 
   icingaweb2:
     image: icinga/icingaweb2:2
@@ -71,8 +72,12 @@ services:
       - ${ICINGA_WEB2_DATA_DIR:-/srv/icinga/web/data}:/data
     networks:
       - icinga-web-net
+      - icinga-shared
 
 networks:
   icinga-web-net:
     name: icinga-web-net
     driver: bridge
+  icinga-shared:
+    external: true
+    name: icinga-shared
