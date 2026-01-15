@@ -68,8 +68,7 @@ services:
       PHP_POST_MAX_SIZE: "${PHP_POST_MAX_SIZE:-64M}"
       PHP_UPLOAD_MAX_FILESIZE: "${PHP_UPLOAD_MAX_FILESIZE:-64M}"
     volumes:
-      - ${ICINGA_WEB2_ETC_DIR:-/srv/icinga/web/etc-icingaweb2}:/etc/icingaweb2
-      - ${ICINGA_WEB2_VAR_DIR:-/srv/icinga/web/var-icingaweb2}:/var/lib/icingaweb2
+      - ${ICINGA_WEB2_DATA_DIR:-/srv/icinga/web/data}:/data
     networks:
       - icinga-web-net
 

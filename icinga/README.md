@@ -6,14 +6,42 @@ This folder contains the Icinga stacks (Master, Web, IcingaDB).
 
 These stacks use bind-mounts for persistent data. By default, all persistent paths live under `/srv/`.
 
+### Permissions
+
+When using bind-mounts, the container process must be able to write to the host directory.
+
+The `icinga/icinga2` container runs as the `icinga` user (UID `5665`). If you see errors like `mkdir /data/etc: permission denied`, fix ownership/permissions for the master data directory:
+
+```bash
+mkdir -p /srv/icinga/master/data
+chown -R 5665:5665 /srv/icinga/master/data
+chmod -R u+rwX,g+rwX /srv/icinga/master/data
+```
+
+For `icinga/icingaweb2`, the container also initializes its configuration under `/data`. If you see errors like `mkdir /data/etc/icingaweb2/...: permission denied`, fix the permissions for the Web data directory.
+
+Because the UID can vary by image version, check it first on the Docker host:
+
+```bash
+docker run --rm icinga/icingaweb2:2 id -u
+docker run --rm icinga/icingaweb2:2 id -g
+```
+
+Then apply ownership (replace `<UID>` and `<GID>` with the values printed above):
+
+```bash
+mkdir -p /srv/icinga/web/data
+chown -R <UID>:<GID> /srv/icinga/web/data
+chmod -R u+rwX,g+rwX /srv/icinga/web/data
+```
+
 Create the directories on the machine that runs Docker:
 
 ```bash
 mkdir -p \
 	/srv/icinga/master/data \
 	/srv/icinga/web/nginx-log \
-	/srv/icinga/web/etc-icingaweb2 \
-	/srv/icinga/web/var-icingaweb2 \
+	/srv/icinga/web/data \
 	/srv/icinga/icingadb/redis-data \
 	/srv/icinga/icingadb/data
 ```
@@ -107,8 +135,7 @@ Optional (with defaults):
 
 Bind-mount paths (optional, with defaults):
 
-- `ICINGA_WEB2_ETC_DIR` (default: `/srv/icinga/web/etc-icingaweb2`)
-- `ICINGA_WEB2_VAR_DIR` (default: `/srv/icinga/web/var-icingaweb2`)
+- `ICINGA_WEB2_DATA_DIR` (default: `/srv/icinga/web/data`)
 
 ### IcingaDB stack
 
