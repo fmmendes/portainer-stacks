@@ -1,6 +1,6 @@
 services:
   icinga2-master:
-    image: icinga/icinga2:2-icingadb
+    image: debian:12
     container_name: icinga2-master
     hostname: icinga2-master
     restart: unless-stopped
@@ -13,6 +13,29 @@ services:
     networks:
       - icinga-master-net
       - icinga-shared
+
+    command: >
+      bash -c "
+        echo '>> Instalando dependências...' &&
+        apt update &&
+        apt install -y curl gnupg lsb-release ca-certificates &&
+
+        echo '>> Adicionando repositório oficial da Icinga...' &&
+        curl https://packages.icinga.com/icinga.key | apt-key add - &&
+        echo \"deb https://packages.icinga.com/debian icinga-$(lsb_release -cs) main\" > /etc/apt/sources.list.d/icinga.list &&
+
+        echo '>> Instalando Icinga2 + módulo IcingaDB...' &&
+        apt update &&
+        apt install -y icinga2 icinga2-icingadb &&
+
+        echo '>> Garantindo que o API Listener está configurado...' &&
+        if [ ! -f /data/var/lib/icinga2/certs/ca.crt ]; then
+          icinga2 api setup;
+        fi &&
+
+        echo '>> Iniciando Icinga2...' &&
+        icinga2 daemon
+      "
 
 networks:
   icinga-master-net:
