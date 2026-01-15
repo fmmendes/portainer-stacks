@@ -10,9 +10,7 @@ Create the directories on the machine that runs Docker:
 
 ```bash
 mkdir -p \
-	/srv/icinga/master/etc \
-	/srv/icinga/master/var \
-	/srv/icinga/master/log \
+	/srv/icinga/master/data \
 	/srv/icinga/web/nginx-log \
 	/srv/icinga/web/etc-icingaweb2 \
 	/srv/icinga/web/var-icingaweb2 \
@@ -68,9 +66,7 @@ Set these values in Portainer (or an `.env` file) before deploying.
 
 Optional (with defaults):
 
-- `ICINGA_MASTER_ETC_DIR` (default: `/srv/icinga/master/etc`)
-- `ICINGA_MASTER_VAR_DIR` (default: `/srv/icinga/master/var`)
-- `ICINGA_MASTER_LOG_DIR` (default: `/srv/icinga/master/log`)
+- `ICINGA_MASTER_DATA_DIR` (default: `/srv/icinga/master/data`)
 
 ### Web stack (Nginx)
 

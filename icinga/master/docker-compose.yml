@@ -9,9 +9,7 @@ services:
     ports:
       - "5665:5665"
     volumes:
-      - ${ICINGA_MASTER_ETC_DIR:-/srv/icinga/master/etc}:/etc/icinga2
-      - ${ICINGA_MASTER_VAR_DIR:-/srv/icinga/master/var}:/var/lib/icinga2
-      - ${ICINGA_MASTER_LOG_DIR:-/srv/icinga/master/log}:/var/log/icinga2
+      - ${ICINGA_MASTER_DATA_DIR:-/srv/icinga/master/data}:/data
     networks:
       - icinga-master-net
       - icinga-shared
