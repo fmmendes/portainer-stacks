@@ -14,7 +14,7 @@ services:
     volumes:
       - ${ICINGA_WEB_LE_LIVE_DIR}:/certs/live/${ICINGA_WEB_CERT_DOMAIN}:ro
       - ${ICINGA_WEB_LE_ARCHIVE_DIR}:/certs/archive/${ICINGA_WEB_CERT_DOMAIN}:ro
-      - icingaweb2_nginx_logs:/var/log/nginx
+      - ${ICINGA_WEB_NGINX_LOG_DIR:-/srv/icinga/web/nginx-log}:/var/log/nginx
     command:
       - /bin/sh
       - -c
@@ -68,15 +68,10 @@ services:
       PHP_POST_MAX_SIZE: "${PHP_POST_MAX_SIZE:-64M}"
       PHP_UPLOAD_MAX_FILESIZE: "${PHP_UPLOAD_MAX_FILESIZE:-64M}"
     volumes:
-      - icingaweb2_etc:/etc/icingaweb2
-      - icingaweb2_var:/var/lib/icingaweb2
+      - ${ICINGA_WEB2_ETC_DIR:-/srv/icinga/web/etc-icingaweb2}:/etc/icingaweb2
+      - ${ICINGA_WEB2_VAR_DIR:-/srv/icinga/web/var-icingaweb2}:/var/lib/icingaweb2
     networks:
       - icinga-web-net
-
-volumes:
-  icingaweb2_etc:
-  icingaweb2_var:
-  icingaweb2_nginx_logs:
 
 networks:
   icinga-web-net:

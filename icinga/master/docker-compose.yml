@@ -5,21 +5,16 @@ services:
     hostname: icinga2-master
     restart: unless-stopped
     environment:
-      TZ: "America/Sao_Paulo"
+      TZ: "${TZ:-America/Sao_Paulo}"
     ports:
       - "5665:5665"
     volumes:
-      - icinga2_etc:/etc/icinga2
-      - icinga2_var:/var/lib/icinga2
-      - icinga2_log:/var/log/icinga2
+      - ${ICINGA_MASTER_ETC_DIR:-/srv/icinga/master/etc}:/etc/icinga2
+      - ${ICINGA_MASTER_VAR_DIR:-/srv/icinga/master/var}:/var/lib/icinga2
+      - ${ICINGA_MASTER_LOG_DIR:-/srv/icinga/master/log}:/var/log/icinga2
     networks:
       - icinga-master-net
       - icinga-shared
-
-volumes:
-  icinga2_etc:
-  icinga2_var:
-  icinga2_log:
 
 networks:
   icinga-master-net:

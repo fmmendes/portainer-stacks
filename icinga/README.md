@@ -2,6 +2,30 @@
 
 This folder contains the Icinga stacks (Master, Web, IcingaDB).
 
+## Persistent data paths (/srv)
+
+These stacks use bind-mounts for persistent data. By default, all persistent paths live under `/srv/`.
+
+Create the directories on the machine that runs Docker:
+
+```bash
+mkdir -p \
+	/srv/icinga/master/etc \
+	/srv/icinga/master/var \
+	/srv/icinga/master/log \
+	/srv/icinga/web/nginx-log \
+	/srv/icinga/web/etc-icingaweb2 \
+	/srv/icinga/web/var-icingaweb2 \
+	/srv/icinga/icingadb/redis-data \
+	/srv/icinga/icingadb/data
+```
+
+Or run the helper script:
+
+```bash
+sh ./mkdir-srv-paths.sh
+```
+
 ## Shared network (required)
 
 The Master and IcingaDB stacks must share an external Docker network so Icinga 2 can write to the IcingaDB Redis instance (Icinga 2 feature `icingadb`).
@@ -40,6 +64,14 @@ Set these values in Portainer (or an `.env` file) before deploying.
 
 - `TZ` (optional, default: `America/Sao_Paulo`)
 
+### Master stack (bind-mount paths)
+
+Optional (with defaults):
+
+- `ICINGA_MASTER_ETC_DIR` (default: `/srv/icinga/master/etc`)
+- `ICINGA_MASTER_VAR_DIR` (default: `/srv/icinga/master/var`)
+- `ICINGA_MASTER_LOG_DIR` (default: `/srv/icinga/master/log`)
+
 ### Web stack (Nginx)
 
 Required:
@@ -52,6 +84,7 @@ Required:
 Optional:
 
 - `ICINGA_WEB_CLIENT_MAX_BODY_SIZE` (default: `64m`)
+- `ICINGA_WEB_NGINX_LOG_DIR` (default: `/srv/icinga/web/nginx-log`)
 
 ### Web stack (Icinga Web 2)
 
@@ -76,6 +109,11 @@ Optional (with defaults):
 - `PHP_POST_MAX_SIZE` (default: `64M`)
 - `PHP_UPLOAD_MAX_FILESIZE` (default: `64M`)
 
+Bind-mount paths (optional, with defaults):
+
+- `ICINGA_WEB2_ETC_DIR` (default: `/srv/icinga/web/etc-icingaweb2`)
+- `ICINGA_WEB2_VAR_DIR` (default: `/srv/icinga/web/var-icingaweb2`)
+
 ### IcingaDB stack
 
 Required:
@@ -93,6 +131,11 @@ Optional (with defaults):
 - `ICINGADB_DATABASE_USER` (default: `icingadb`)
 - `ICINGADB_LOGGING_LEVEL` (default: `info`)
 - `ICINGADB_LOGGING_OUTPUT` (default: `console`)
+
+Bind-mount paths (optional, with defaults):
+
+- `ICINGADB_REDIS_DATA_DIR` (default: `/srv/icinga/icingadb/redis-data`)
+- `ICINGADB_DATA_DIR` (default: `/srv/icinga/icingadb/data`)
 
 ## Master (API + IcingaDB integration)
 
