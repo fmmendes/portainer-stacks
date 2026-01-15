@@ -1,6 +1,6 @@
 services:
   icinga2-master:
-    image: icinga/icinga2:2
+    image: icinga/icinga2:2-icingadb
     container_name: icinga2-master
     hostname: icinga2-master
     restart: unless-stopped
@@ -13,22 +13,6 @@ services:
     networks:
       - icinga-master-net
       - icinga-shared
-
-    # Instala o módulo icingadb + garante API Listener + inicia o Icinga2
-    command: >
-      bash -c "
-        echo '>> Instalando módulo icingadb...' &&
-        apt update &&
-        apt install -y icingadb &&
-
-        echo '>> Garantindo que o API Listener está configurado...' &&
-        if [ ! -f /data/var/lib/icinga2/certs/ca.crt ]; then
-          icinga2 api setup;
-        fi &&
-
-        echo '>> Iniciando Icinga2...' &&
-        icinga2 daemon
-      "
 
 networks:
   icinga-master-net:
