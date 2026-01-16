@@ -3,10 +3,16 @@ services:
     image: redis:7-alpine
     container_name: redis-icingadb
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
     command:
       - redis-server
       - --appendonly
       - "yes"
+      - --bind
+      - 0.0.0.0
+      - --protected-mode
+      - "no"
     volumes:
       - ${ICINGADB_REDIS_DATA_DIR:-/srv/icinga/icingadb/redis-data}:/data
     networks:
