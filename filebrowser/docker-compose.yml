@@ -18,7 +18,8 @@ services:
     volumes:
       - /srv/filebrowser/data/ro:/srv/data/ro:ro
       - /srv/filebrowser/data/rw:/srv/data/rw
-      - /srv/filebrowser/filebrowser.db:/database/filebrowser.db
+      - /srv/filebrowser/database:/database
+      - /srv/filebrowser/config:/config
     ports:
       - "8080:80"
     networks:
