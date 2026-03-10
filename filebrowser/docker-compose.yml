@@ -17,9 +17,9 @@ services:
     restart: unless-stopped
     user: "1000:1000"
     volumes:
-      - /srv/data/ro:/srv/data/ro:ro
-      - /srv/data/rw:/srv/data/rw
-      - ./filebrowser.db:/database/filebrowser.db
+      - /srv/filebrowser/data/ro:/srv/data/ro:ro
+      - /srv/filebrowser/data/rw:/srv/data/rw
+      - /srv/filebrowser/filebrowser.db:/database/filebrowser.db
     ports:
       - "8080:80"
     networks:
