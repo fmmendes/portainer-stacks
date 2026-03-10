@@ -1,7 +1,6 @@
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: cloudflared
     restart: unless-stopped
     environment:
       - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
