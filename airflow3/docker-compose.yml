@@ -14,7 +14,7 @@ services:
     volumes:
       - /opt/airflow3/dags:/opt/airflow/dags
 
-  webserver:
+  api-server:
     image: apache/airflow:3.0.6-python3.12
     depends_on:
       - airflow-init
@@ -26,7 +26,21 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     ports:
       - "8083:8080"
-    command: webserver
+    command: api-server
+    volumes:
+      - /opt/airflow3/dags:/opt/airflow/dags
+
+  dag-processor:
+    image: apache/airflow:3.0.6-python3.12
+    depends_on:
+      - airflow-init
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVER}:5432/${POSTGRES_DB}
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    command: dag-processor
     volumes:
       - /opt/airflow3/dags:/opt/airflow/dags
 
