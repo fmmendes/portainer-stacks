@@ -16,7 +16,10 @@ services:
           airflow db migrate &&
           airflow users create --username "${AIRFLOW_ADMIN_USER}" --password "${AIRFLOW_ADMIN_PASSWORD}" --firstname "${AIRFLOW_ADMIN_FIRSTNAME}" --lastname "${AIRFLOW_ADMIN_LASTNAME}" --role Admin --email "${AIRFLOW_ADMIN_EMAIL}"
     volumes:
-      - /opt/airflow3/dags:/opt/airflow/dags
+      - /srv/airflow3/dags:/opt/airflow/dags
+      - /srv/airflow3/logs:/opt/airflow/logs
+      - /srv/airflow3/plugins:/opt/airflow/plugins
+      - /srv/airflow3/config:/opt/airflow/config
 
   api-server:
     image: apache/airflow:3.0.6-python3.12
@@ -34,7 +37,10 @@ services:
       - "8083:8080"
     command: api-server
     volumes:
-      - /opt/airflow3/dags:/opt/airflow/dags
+      - /srv/airflow3/dags:/opt/airflow/dags
+      - /srv/airflow3/logs:/opt/airflow/logs
+      - /srv/airflow3/plugins:/opt/airflow/plugins
+      - /srv/airflow3/config:/opt/airflow/config
 
   dag-processor:
     image: apache/airflow:3.0.6-python3.12
@@ -50,7 +56,10 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     command: dag-processor
     volumes:
-      - /opt/airflow3/dags:/opt/airflow/dags
+      - /srv/airflow3/dags:/opt/airflow/dags
+      - /srv/airflow3/logs:/opt/airflow/logs
+      - /srv/airflow3/plugins:/opt/airflow/plugins
+      - /srv/airflow3/config:/opt/airflow/config
 
   scheduler:
     image: apache/airflow:3.0.6-python3.12
@@ -66,4 +75,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     command: scheduler
     volumes:
-      - /opt/airflow3/dags:/opt/airflow/dags
+      - /srv/airflow3/dags:/opt/airflow/dags
+      - /srv/airflow3/logs:/opt/airflow/logs
+      - /srv/airflow3/plugins:/opt/airflow/plugins
+      - /srv/airflow3/config:/opt/airflow/config

@@ -12,7 +12,10 @@ services:
       "airflow db migrate &&
        airflow users create --username ${AIRFLOW_ADMIN_USER} --password ${AIRFLOW_ADMIN_PASSWORD} --firstname ${AIRFLOW_ADMIN_FIRSTNAME} --lastname ${AIRFLOW_ADMIN_LASTNAME} --role Admin --email ${AIRFLOW_ADMIN_EMAIL}"
     volumes:
-      - /opt/airflow2/dags:/opt/airflow/dags
+      - /srv/airflow2/dags:/opt/airflow/dags
+      - /srv/airflow2/logs:/opt/airflow/logs
+      - /srv/airflow2/plugins:/opt/airflow/plugins
+      - /srv/airflow2/config:/opt/airflow/config
 
   webserver:
     image: apache/airflow:2.11.0-python3.12
@@ -28,7 +31,10 @@ services:
       - "8082:8080"
     command: webserver
     volumes:
-      - /opt/airflow2/dags:/opt/airflow/dags
+      - /srv/airflow2/dags:/opt/airflow/dags
+      - /srv/airflow2/logs:/opt/airflow/logs
+      - /srv/airflow2/plugins:/opt/airflow/plugins
+      - /srv/airflow2/config:/opt/airflow/config
 
   scheduler:
     image: apache/airflow:2.11.0-python3.12
@@ -42,4 +48,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     command: scheduler
     volumes:
-      - /opt/airflow2/dags:/opt/airflow/dags
+      - /srv/airflow2/dags:/opt/airflow/dags
+      - /srv/airflow2/logs:/opt/airflow/logs
+      - /srv/airflow2/plugins:/opt/airflow/plugins
+      - /srv/airflow2/config:/opt/airflow/config
