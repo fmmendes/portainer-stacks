@@ -16,15 +16,17 @@ services:
           airflow db migrate &&
           airflow users create --username "${AIRFLOW_ADMIN_USER}" --password "${AIRFLOW_ADMIN_PASSWORD}" --firstname "${AIRFLOW_ADMIN_FIRSTNAME}" --lastname "${AIRFLOW_ADMIN_LASTNAME}" --role Admin --email "${AIRFLOW_ADMIN_EMAIL}"
     volumes:
-      - /srv/airflow3/dags:/opt/airflow/dags
-      - /srv/airflow3/logs:/opt/airflow/logs
-      - /srv/airflow3/plugins:/opt/airflow/plugins
-      - /srv/airflow3/config:/opt/airflow/config
+      - /srv/airflow/dags:/opt/airflow/dags
+      - /srv/airflow/logs:/opt/airflow/logs
+      - /srv/airflow/plugins:/opt/airflow/plugins
+      - /srv/airflow/config:/opt/airflow/config
+      - /u01:/u01
 
   api-server:
     image: apache/airflow:latest-python3.14
     depends_on:
-      - airflow-init
+      airflow-init:
+        condition: service_completed_successfully
     environment:
       _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow-providers-fab==3.6.0
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -37,15 +39,17 @@ services:
       - "8083:8080"
     command: api-server
     volumes:
-      - /srv/airflow3/dags:/opt/airflow/dags
-      - /srv/airflow3/logs:/opt/airflow/logs
-      - /srv/airflow3/plugins:/opt/airflow/plugins
-      - /srv/airflow3/config:/opt/airflow/config
+      - /srv/airflow/dags:/opt/airflow/dags
+      - /srv/airflow/logs:/opt/airflow/logs
+      - /srv/airflow/plugins:/opt/airflow/plugins
+      - /srv/airflow/config:/opt/airflow/config
+      - /u01:/u01
 
   dag-processor:
     image: apache/airflow:latest-python3.14
     depends_on:
-      - airflow-init
+      airflow-init:
+        condition: service_completed_successfully
     environment:
       _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow-providers-fab==3.6.0
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -56,15 +60,17 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     command: dag-processor
     volumes:
-      - /srv/airflow3/dags:/opt/airflow/dags
-      - /srv/airflow3/logs:/opt/airflow/logs
-      - /srv/airflow3/plugins:/opt/airflow/plugins
-      - /srv/airflow3/config:/opt/airflow/config
+      - /srv/airflow/dags:/opt/airflow/dags
+      - /srv/airflow/logs:/opt/airflow/logs
+      - /srv/airflow/plugins:/opt/airflow/plugins
+      - /srv/airflow/config:/opt/airflow/config
+      - /u01:/u01
 
   scheduler:
     image: apache/airflow:latest-python3.14
     depends_on:
-      - airflow-init
+      airflow-init:
+        condition: service_completed_successfully
     environment:
       _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow-providers-fab==3.6.0
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -75,7 +81,8 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     command: scheduler
     volumes:
-      - /srv/airflow3/dags:/opt/airflow/dags
-      - /srv/airflow3/logs:/opt/airflow/logs
-      - /srv/airflow3/plugins:/opt/airflow/plugins
-      - /srv/airflow3/config:/opt/airflow/config
+      - /srv/airflow/dags:/opt/airflow/dags
+      - /srv/airflow/logs:/opt/airflow/logs
+      - /srv/airflow/plugins:/opt/airflow/plugins
+      - /srv/airflow/config:/opt/airflow/config
+      - /u01:/u01
