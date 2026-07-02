@@ -1,6 +1,7 @@
 services:
   airflow-init:
-    image: apache/airflow:latest-python3.14
+    image: apache/airflow:3.2.2-python3.14
+    user: "1000:0"
     environment:
       _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow-providers-fab==3.6.0
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -9,6 +10,9 @@ services:
       AIRFLOW__CORE__FERNET_KEY: ''
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://api-server:8080/execution/'
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     command:
       - bash
       - -c
@@ -23,7 +27,8 @@ services:
       - /u01:/u01
 
   api-server:
-    image: apache/airflow:latest-python3.14
+    image: apache/airflow:3.2.2-python3.14
+    user: "1000:0"
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -35,9 +40,18 @@ services:
       AIRFLOW__CORE__FERNET_KEY: ''
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://api-server:8080/execution/'
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     ports:
       - "8083:8080"
     command: api-server
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     volumes:
       - /srv/airflow/dags:/opt/airflow/dags
       - /srv/airflow/logs:/opt/airflow/logs
@@ -46,7 +60,8 @@ services:
       - /u01:/u01
 
   dag-processor:
-    image: apache/airflow:latest-python3.14
+    image: apache/airflow:3.2.2-python3.14
+    user: "1000:0"
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -58,7 +73,16 @@ services:
       AIRFLOW__CORE__FERNET_KEY: ''
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://api-server:8080/execution/'
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     command: dag-processor
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type DagProcessorJob --hostname \"$${HOSTNAME}\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     volumes:
       - /srv/airflow/dags:/opt/airflow/dags
       - /srv/airflow/logs:/opt/airflow/logs
@@ -67,7 +91,8 @@ services:
       - /u01:/u01
 
   scheduler:
-    image: apache/airflow:latest-python3.14
+    image: apache/airflow:3.2.2-python3.14
+    user: "1000:0"
     depends_on:
       airflow-init:
         condition: service_completed_successfully
@@ -79,7 +104,16 @@ services:
       AIRFLOW__CORE__FERNET_KEY: ''
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://api-server:8080/execution/'
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     command: scheduler
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     volumes:
       - /srv/airflow/dags:/opt/airflow/dags
       - /srv/airflow/logs:/opt/airflow/logs
