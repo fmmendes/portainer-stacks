@@ -1,0 +1,106 @@
+services:
+  srs-recorder:
+    image: ${PYTHON_IMAGE:-python:3.13-alpine}
+    restart: unless-stopped
+    entrypoint: ["python", "-u", "/support/recorder.py"]
+    command: ["--kind", "srs"]
+    environment:
+      RTMP_APP_NAME: ${RTMP_APP_NAME:-live}
+      RTMP_STREAM_NAME: ${RTMP_STREAM_NAME:-stream}
+      RTMP_RECORD_PATH: ${RTMP_RECORD_PATH:-/recordings}
+      RTMP_RECORD_ENABLED: ${RTMP_RECORD_ENABLED:-on}
+      RTMP_RECORD_UNIQUE: ${RTMP_RECORD_UNIQUE:-on}
+      RTMP_SEGMENT_MINUTES: ${RTMP_SEGMENT_MINUTES:-2}
+      RTMP_OVERLAP_SECONDS: ${RTMP_OVERLAP_SECONDS:-1}
+      RTMP_MAX_GOP_SECONDS: ${RTMP_MAX_GOP_SECONDS:-10}
+      RTMP_MAX_BUFFER_MB: ${RTMP_MAX_BUFFER_MB:-64}
+      RTMP_ALIGN_CLOCK: ${RTMP_ALIGN_CLOCK:-on}
+      RTMP_CLOCK_OFFSET_MINUTES: ${RTMP_CLOCK_OFFSET_MINUTES:-0}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ${RECORDER_SUPPORT_PATH:-../rtmp-recorder-common}:/support:ro
+      - ${SRS_CONFIG_FILE:-./srs.conf}:/templates/server.conf:ro
+      - ${RECORDINGS_PATH:-./recordings}:/recordings
+      - runtime:/runtime
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9001/health', timeout=2).close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  srs-ffmpeg:
+    image: ${FFMPEG_IMAGE:-linuxserver/ffmpeg:9.0.2}
+    user: "${PUID:-1000}:${PGID:-1000}"
+    restart: unless-stopped
+    entrypoint: ["ffmpeg"]
+    command:
+      - -hide_banner
+      - -nostdin
+      - -loglevel
+      - ${FFMPEG_LOG_LEVEL:-warning}
+      - -listen
+      - "1"
+      - -i
+      - rtmp://0.0.0.0:1936/${RTMP_APP_NAME:-live}/${RTMP_STREAM_NAME:-stream}
+      - -map
+      - "0:v:0"
+      - -map
+      - "0:a:0?"
+      - -c
+      - copy
+      - -flvflags
+      - no_duration_filesize
+      - -f
+      - flv
+      - tcp://srs-recorder:9000
+    depends_on:
+      srs-recorder:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "grep -Eq ':0790 [0-9A-Fa-f]+:[0-9A-Fa-f]+ 0[1A] ' /proc/net/tcp"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    security_opt:
+      - no-new-privileges:true
+
+  srs:
+    image: ${SRS_IMAGE:-ossrs/srs:5}
+    user: "${PUID:-1000}:${PGID:-1000}"
+    restart: unless-stopped
+    command: ["./objs/srs", "-c", "/runtime/server.conf"]
+    ports:
+      - "${RTMP_BIND_ADDRESS:-0.0.0.0}:${RTMP_PORT:-1935}:1935"
+      - "${HTTP_BIND_ADDRESS:-0.0.0.0}:${HTTP_PORT:-8080}:8080"
+    volumes:
+      - ${SRS_CONFIG_FILE:-./srs.conf}:/usr/local/srs/conf/recorder.conf:ro
+      - ${RECORDINGS_PATH:-./recordings}:/recordings
+      - runtime:/runtime:ro
+    depends_on:
+      srs-recorder:
+        condition: service_healthy
+      srs-ffmpeg:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -ec
+        - |
+          exec 3<>/dev/tcp/127.0.0.1/8080
+          printf 'GET /api/v1/versions HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3
+          IFS= read -r response <&3
+          [[ "$$response" == *" 200 "* ]]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  runtime:
